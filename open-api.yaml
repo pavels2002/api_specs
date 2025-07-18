@@ -128,7 +128,7 @@ components:
           description: Тип осмотра
         status:
           type: string
-          description: Статус осмотра
+          description: Статус осмотр
         dateTime:
           type: integer
           format: int64
