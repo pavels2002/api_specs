@@ -1,0 +1,315 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+paths:
+  /api/back-office/journals/export/examinations/xlsx:
+    get:
+      tags:
+      - journal-controller
+      operationId: exportExaminationsToXlsx
+      parameters:
+      - name: fromDate
+        in: query
+        description: Дата с
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: toDate
+        in: query
+        description: Дата по
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: supplierOrganizationId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: recipientOrganizationId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/back-office/manual-queue-medical-examinations:
+    get:
+      tags:
+        - queue-medical-examination-manual-controller
+      operationId: getExaminations
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: Номер страницы
+        - name: size
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+          description: Количество записей на странице
+        - name: fullName
+          in: query
+          schema:
+            type: string
+          description: ФИО сотрудника
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ManualExaminationsQueueResponse"
+  /api/back-office/medical-examination-histories/{id}:
+    get:
+      tags:
+        - medical-examination-history-controller
+      operationId: getExaminationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Уникальный идентификатор осмотра
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MedicalExaminationHistoryCard"
+
+
+components:
+  schemas:
+    ManualExaminationsQueueResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManualQueueExaminationCard"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    ManualQueueEmployee:
+      type: object
+      description: Данные сотрудника
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор сотрудника
+        lastName:
+          type: string
+          description: Фамилия сотрудника
+        firstName:
+          type: string
+          description: Имя сотрудника
+        middleName:
+          type: string
+          description: Отчество сотрудника
+        organizationName:
+          type: string
+          description: Название организации сотрудника
+        photoUrl:
+          type: string
+          description: Ссылка на фото профиля
+    ManualQueueMeasurement:
+      type: object
+      description: Данные измерения
+      properties:
+        code:
+          type: string
+          description: Код типа измерения
+        value:
+          type: string
+          description: Значение измерения
+        unit:
+          type: string
+          description: Единица измерений
+        photoUrl:
+          type: string
+          description: Ссылка на фото этапа осмотра
+        referenceStatus:
+          type: string
+          enum:
+            - IN_RANGE
+            - NOT_IN_RANGE
+            - NONE
+          description: Информация о нахождении результата измерений в допустимом диапазоне
+    ManualQueueExaminationCard:
+      type: object
+      description: Данные осмотра
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор осмотра
+        dateTime:
+          type: integer
+          format: int64
+          description: Дата и время осмотра UTC
+        authorizationPhotoUrl:
+          type: string
+          description: Ссылка на фото на этапе авторизации на терминале
+        employee:
+          $ref: "#/components/schemas/ManualQueueEmployee"
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ManualQueueMeasurement"
+    Pagination:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+    MedicalExaminationHistoryResult:
+      type: object
+      description: Результат медицинского осмотра
+      properties:
+        dateTime:
+          type: integer
+          format: int64
+          description: Дата/время вынесения решения или остановки осмотра
+        type:
+          type: string
+          description: Тип результата осмотра
+        reason:
+          type: string
+          description: Причина отказа/остановки осмотра
+        conclusion:
+          type: string
+          description: Заключение
+    MedicalExaminationHistoryPatient:
+      type: object
+      description: Данные о пациенте
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пациента
+        lastName:
+          type: string
+          description: Фамилия
+        firstName:
+          type: string
+          description: Имя
+        middleName:
+          type: string
+          description: Отчество
+        birthDate:
+          type: string
+          format: date
+          description: Дата рождения
+        staffNumber:
+          type: string
+          description: Табельный номер
+        position:
+          type: string
+          description: Должность
+        organizationName:
+          type: string
+          description: Название организации
+        photoUrl:
+          type: string
+          description: Ссылка на фото профиля
+    MedicalExaminationHistoryDoctor:
+      type: object
+      description: Данные о враче
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор врача
+        lastName:
+          type: string
+          description: Фамилия
+        firstName:
+          type: string
+          description: Имя
+        middleName:
+          type: string
+          description: Отчество
+        organizationName:
+          type: string
+          description: Название организации
+    MedicalExaminationHistoryMeasurement:
+      type: object
+      description: Данные измерений
+      properties:
+        code:
+          type: string
+          description: Код типа измерения
+        value:
+          type: string
+          description: Значение измерения
+        referenceStatus:
+          type: string
+          enum:
+            - IN_RANGE
+            - NOT_IN_RANGE
+            - NONE
+          description: Информация о нахождении результата измерений в допустимом диапазоне
+        photoUrl:
+          type: string
+          description: Ссылка на фото
+    MedicalExaminationHistoryCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор осмотра
+        type:
+          type: string
+          description: Тип осмотра
+        status:
+          type: string
+          description: Статус осмотра
+        dateTime:
+          type: integer
+          format: int64
+          description:  Дата/время осмотра
+        signed:
+          type: boolean
+          description: Флаг подписи результатов осмотра УКЭП
+        examinationVideoUrl:
+          type: string
+          description: Ссылка на видео осмотра
+        authorizationPhotoUrl:
+          type: string
+          description: Ссылка на фото при авторизации
+        result:
+          $ref: "#/components/schemas/MedicalExaminationHistoryResult"
+        patient:
+          $ref: "#/components/schemas/MedicalExaminationHistoryPatient"
+        doctor:
+          $ref: "#/components/schemas/MedicalExaminationHistoryDoctor"
+        measurements:
+          type: array
+          items:
+            $ref: "#/components/schemas/MedicalExaminationHistoryMeasurement"
