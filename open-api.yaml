@@ -125,7 +125,7 @@ components:
           description: Уникальный идентификатор осмотра
         type:
           type: string
-          description: Тип осмотра
+          description: Тип осмотра новый
         status:
           type: string
           description: Статус осмотра
